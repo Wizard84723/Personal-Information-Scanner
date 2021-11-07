@@ -1,1 +1,10 @@
 # Personal-Information-Scanner
+This is an automatic web personal information scanner.  <br>
+By entering the URL, the program can scan for personal information (e.g. Name, ID number, Phone number...) under the domain and save the scanned results to your computer.
+* Input
+  * Scan target URL
+  * Scan condition
+* Output
+  * result.CSV
+* Request
+  * requirements.txt
