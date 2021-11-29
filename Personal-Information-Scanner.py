@@ -175,11 +175,14 @@ class Obtain_Page:
             elif '@' in tag:
                 continue
             elif tag[0] == "/":
-                if tag[1] == "/":
-                    tag_s = "https:" + tag
-                    self.all_url.append(tag_s)
-                else:
-                    tag = tag[1:]
+                try:
+                    if tag[1] == "/":
+                        tag_s = "https:" + tag
+                        self.all_url.append(tag_s)
+                    else:
+                        tag = tag[1:]
+                except:
+                    pass
             elif 'http' in tag and self.condition_3 == 2:
                 continue
             elif 'http' in tag and self.condition_3 == 1:
@@ -337,6 +340,15 @@ class Check_Formula:
             sys.exit(-1)
         return ph_2
 
+    def name_check(self, name):
+        name_filter = []
+        f = open('filter.txt', 'r', encoding="utf-8")
+        for line in f.readlines():
+            name_filter.append(line[:-1])
+        f.close
+        name_2 = [x for x in name if x not in name_filter]
+        return name_2, len(name), len(name_2)
+
 
 class Analysis:
     def __init__(self):
@@ -350,10 +362,15 @@ class Analysis:
         self.output_array = []
         self.suc = 0
         self.flag = 0
-        self.r_name_check = re.compile("姓名")
+        # self.r_name_check = re.compile("姓名")
+        self.r_name = re.compile(
+            r"([陳林黃張李王吳劉蔡楊許鄭謝洪郭邱曾廖賴徐周葉蘇莊呂江何蕭羅高潘簡朱鍾游彭詹胡施沈余盧梁趙顏柯翁魏孫戴范方宋鄧杜傅侯曹薛丁卓阮馬董温唐藍石蔣古紀姚連馮歐程湯黄田康姜白汪鄒尤巫鐘黎涂龔嚴韓袁金童陸夏柳凃邵錢伍倪溫于譚駱熊任甘秦顧毛章史官萬俞雷粘]{1})"
+            r"([\u4E00-\u9FFF]{2})")
+        '''
         self.r_name = re.compile(
             r"(\s|:|：?)([陳林黃張李王吳劉蔡楊許鄭謝洪郭邱曾廖賴徐周葉蘇莊呂江何蕭羅高潘簡朱鍾游彭詹胡施沈余盧梁趙顏柯翁魏孫戴范方宋鄧杜傅侯曹薛丁卓阮馬董温唐藍石蔣古紀姚連馮歐程湯黄田康姜白汪鄒尤巫鐘黎涂龔嚴韓袁金童陸夏柳凃邵錢伍倪溫于譚駱熊任甘秦顧毛章史官萬俞雷粘]{1})"
             r"([\u4E00-\u9FFF]{2})(\s{1}?)")
+        '''
         # \u2E80-\u9FFF
         self.r_id_num = re.compile(r"[a-z]\d{9}|[A-Z]\d{9}")
         # self.r3 = re.compile(r"(0{1})(\d{1,3})(-{1})(\d{5,8})")
@@ -460,16 +477,25 @@ class Analysis:
     def reg_find(self):
         name_tmp = ""
         name_out = []
-        name_check = re.findall(self.r_name_check, self.fullText)
+        # name_check = re.findall(self.r_name_check, self.fullText)
         name = re.findall(self.r_name, self.fullText)
         # print(name_check)
         # print(len(name_check))
         # if len(name_check) > 0:
         for k in range(len(name)):
+            '''
             name[k] = name[k][1:-1]
             for m in range(len(name[k])):
+                
                 name_tmp = name_tmp + str(name[k][m])
-            name_out.append(name_tmp)
+            '''
+            if "先生" in name[k][1]:
+                continue
+            elif "小姐" in name[k][1]:
+                continue
+            else:
+                name_tmp = str(name[k][0]) + str(name[k][1])
+                name_out.append(name_tmp)
             name_tmp = ""
 
         id_num = re.findall(self.r_id_num, self.fullText)
@@ -548,14 +574,29 @@ class Analysis:
             addr_2.append(addr_tmp)
             addr_tmp = ""
         check = Check_Formula()
-        id_2 = check.id_num_check(id_num)
-        # phone_f3 = check.phone_check(phone)
         name = numpy.unique(name_out)
-        # name_out
-        addr_2 = numpy.unique(addr_2)
+        name_2, t1, t2 = check.name_check(name)
+        id_2 = check.id_num_check(id_num)
         id_2 = numpy.unique(id_2)
         phone_out = numpy.unique(phone_out)
-        return name, addr_2, id_2, phone_out
+        addr_2 = numpy.unique(addr_2)
+        return name_2, addr_2, id_2, phone_out, t1, t2
+
+    """
+    def name_check(self,name):
+        total_count_a = 0
+        total_count_b = 0
+        name_filter = []
+        f = open('qwe.txt','r',encoding="utf-8")
+        for line in f.readlines():
+            name_filter.append(line[:-1])
+        f.close
+        total_count_a += len(name)
+        name_2 = [x for x in name if x not in name_filter]
+        total_count_b += len(name_2)
+        return name_2, total_count_a, total_count_b
+    """
+
 
 
 class Generate_Report:
@@ -644,6 +685,8 @@ class Interface:
 
 
 def main():
+    t = 0
+    tt = 0
     io = Interface()
     input_addr, condition_1, condition_2, condition_3 = io.input_box()
     # 輸入三個input
@@ -663,10 +706,18 @@ def main():
     step_4 = Generate_Report()
     for i in tqdm(range(len(all_url))):
         url, err, suc = step_3.document(i, all_url[i], path)
-        name, addr, id_num, phone = step_3.reg_find()
+        name, addr, id_num, phone, t1, t2 = step_3.reg_find()
+        t += t1
+        tt += t2
+        # name, total_count_a, total_count_b = step_3.name_check(name)
+        # ???
         step_4.generate_table(url, err, name, addr, id_num, phone)
         risk = step_4.condition_check(condition_1, condition_2)
+
+    print(t)
+    print(tt)
     # 解析超鏈結內容並檢查是否有匹配字串
+
     step_4.wirte_file(path)
     # 生成報表
     io.output(suc, risk)
