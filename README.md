@@ -17,7 +17,8 @@
   * Scan target URL
   * Scan condition
 * Output
-  * result.CSV
+  * All target subpage files
+  * result.csv
 * Request
   * Python3
   * requirements.txt
