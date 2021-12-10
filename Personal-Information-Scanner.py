@@ -13,6 +13,7 @@ import sys
 import time
 import traceback
 import logging
+import xlrd
 from tqdm import tqdm
 
 requests.packages.urllib3.disable_warnings()
@@ -34,7 +35,8 @@ class Error_Message:
         sys.exit()
     """
 
-    def errmsg_a(self):  #有問題
+    # 錯誤訊息輸出格式
+    def errmsg_a(self):
         error_class = self.detail.__class__.__name__  # 取得錯誤類型
         detail = self.detail.args[0]  # 取得詳細內容
         cl, exc, tb = sys.exc_info()  # 取得Call Stack
@@ -56,6 +58,9 @@ class Input_Check:
         self.condition_3 = condition_3
         self.condition_arr = []
 
+    '''
+        檢查輸入的網址是否合法
+    '''
     def addr_check(self):
         try:
             r = requests.get(self.input_addr, timeout=3)
@@ -76,6 +81,9 @@ class Input_Check:
             err = Error_Message(e)
             err.errmsg_a()
 
+    '''
+         檢查 外洩條件 是否合法
+    '''
     def condition_1_check(self):
         try:
             self.condition_1 = int(self.condition_1)
@@ -95,6 +103,9 @@ class Input_Check:
             pass
         return self.condition_1
 
+    '''
+         檢查 外洩條件個數 是否合法
+    '''
     def condition_2_check(self):
         try:
             self.condition_2 = int(self.condition_2)
@@ -109,6 +120,9 @@ class Input_Check:
             pass
         return self.condition_2
 
+    '''
+         檢查 掃瞄範圍條件 是否合法
+    '''
     def condition_3_check(self):
         try:
             self.condition_3 = int(self.condition_3)
@@ -123,6 +137,9 @@ class Input_Check:
             sys.exit(-1)
         return self.condition_3
 
+    '''
+         檢查 自訂搜尋範圍 是否合法
+    '''
     def condition_4_check(self):
         try:
             if self.condition_3 == 1:
@@ -150,12 +167,19 @@ class Obtain_Page:
         self.condition_3 = condition_3
         self.condition_arr = condition_arr
 
+    '''
+         輸入網址前處理
+    '''
     def front_page_url(self):
         fp_url_split = self.input_addr.split('/')
         self.reorganize_front_page_url = fp_url_split[0] + '//' + fp_url_split[2] + '/'
         self.file_name = fp_url_split[2]
         return self.reorganize_front_page_url
 
+    '''
+         取回所有首頁中的子網頁超鏈結
+         將超鏈結中含有 http 的字串取出
+    '''
     def get_url(self):
         self.all_url.append(self.input_addr)
         r = requests.get(self.input_addr, timeout=3)
@@ -222,6 +246,9 @@ class Check_Formula:
     def __init__(self):
         pass
 
+    '''
+         身分證字號格式檢查(判別式)
+    '''
     def id_num_check(self, id_num):
         try:
             id2 = []
@@ -311,6 +338,9 @@ class Check_Formula:
             sys.exit(-1)
         return id2
 
+    '''
+         電話號碼格式檢查
+    '''
     def phone_check(self, phone):
         try:
             ph_2 = []
@@ -340,14 +370,41 @@ class Check_Formula:
             sys.exit(-1)
         return ph_2
 
-    def name_check(self, name):
-        name_filter = []
-        f = open('filter.txt', 'r', encoding="utf-8")
-        for line in f.readlines():
-            name_filter.append(line[:-1])
-        f.close
-        name_2 = [x for x in name if x not in name_filter]
+    '''
+         檢查 黑名單 (根據 filter.txt)
+    '''
+    def name_check_b(self, name):
+        try:
+            name_filter = []
+            f = open('filter.txt', 'r', encoding="utf-8")
+            for line in f.readlines():
+                name_filter.append(line[:-1])
+            f.close
+            name_2 = [x for x in name if x not in name_filter]
+        except Exception as e:
+            err = Error_Message(e)
+            err.errmsg_a()
+            print("黑名單檢查時發生錯誤")
+            sys.exit(-1)
         return name_2, len(name), len(name_2)
+
+    '''
+         檢查 白名單 (自訂義)
+    '''
+    def name_check_w(self, name):
+        try:
+            name_allow = []
+            f = open('allow.txt', 'r', encoding="utf-8")
+            for line in f.readlines():
+                name_allow.append(line[:-1])
+            f.close
+            name_1 = [x for x in name if x not in name_allow]
+        except Exception as e:
+            err = Error_Message(e)
+            err.errmsg_a()
+            print("白名單檢查時發生錯誤")
+            sys.exit(-1)
+        return name_1
 
 
 class Analysis:
@@ -395,6 +452,10 @@ class Analysis:
         self.r_addr = re.compile(r"(台北|臺北|新北|桃園|台中|臺中|台南|臺南|高雄|苗栗|彰化|南投|雲林|嘉義|屏東|宜蘭|花蓮|台東|臺東|澎湖|金門|連江|基隆|新竹+)"
                              r"([\u4E00-\u9FFF]+)(鄉|鎮|市|區?)([\u4E00-\u9FFF]+)(街|大道|路+)([一-十]?段?)([一-十]|百|千|\d+)(-?)(\w*)(號+)")
 
+    '''
+         將所有子網頁取回，並將其儲存至目標資料夾
+         若是該超鏈結沒有回應則在輸出報表中該列打勾
+    '''
     def document(self, i, all_url, path):
         self.err = ""
         self.all_url = all_url
@@ -458,6 +519,20 @@ class Analysis:
                         for cell in row.cells:
                             for para in cell.paragraphs:
                                 self.fullText = self.fullText + para.text
+            elif '.xls' in url:
+                # 下載檔案
+                writefile = path + str(i) + ".xls"
+                with open(writefile, 'wb') as f:
+                    f.write(self.test.content)
+                f.close()
+                data = xlrd.open_workbook(writefile,logfile="Databreach.log")
+                for sheet in data.sheets():
+                    for i in range(sheet.nrows):
+                        for j in range(sheet.ncols):
+                            text = sheet.cell_value(i, j)
+                            stext = str(text)
+                            self.fullText = self.fullText + stext
+
             else:
                 # 下載檔案
                 writefile = self.path + str(i) + ".html"
@@ -469,11 +544,17 @@ class Analysis:
                 soup_leaf = BeautifulSoup(self.test.text, 'lxml')
                 self.fullText = soup_leaf.text
             self.suc = self.suc + 1
+            self.flag = 0
         except:
             self.err = "V"
             return url, self.err, self.suc
         return url, self.err, self.suc
 
+    '''
+         將每個子網頁過 regular expression
+         目前包含四種檢出目標，人名、身份證字號、電話號碼、地址
+         並且會將重複的檢出結果去除
+    '''
     def reg_find(self):
         name_tmp = ""
         name_out = []
@@ -485,8 +566,7 @@ class Analysis:
         for k in range(len(name)):
             '''
             name[k] = name[k][1:-1]
-            for m in range(len(name[k])):
-                
+            for m in range(len(name[k])):                
                 name_tmp = name_tmp + str(name[k][m])
             '''
             if "先生" in name[k][1]:
@@ -497,9 +577,7 @@ class Analysis:
                 name_tmp = str(name[k][0]) + str(name[k][1])
                 name_out.append(name_tmp)
             name_tmp = ""
-
         id_num = re.findall(self.r_id_num, self.fullText)
-
         addr = re.findall(self.r_addr, self.fullText)
         phone_len_tmp = ""
         phone_len_tmp2 = ""
@@ -575,13 +653,14 @@ class Analysis:
             addr_tmp = ""
         check = Check_Formula()
         name = numpy.unique(name_out)
-        name_2, t1, t2 = check.name_check(name)
+        # name_1 = check.name_check_w(name)
+        name_2, t1, t2 = check.name_check_b(name)
+        # name_2.extend(name_1)
         id_2 = check.id_num_check(id_num)
         id_2 = numpy.unique(id_2)
         phone_out = numpy.unique(phone_out)
         addr_2 = numpy.unique(addr_2)
         return name_2, addr_2, id_2, phone_out, t1, t2
-
     """
     def name_check(self,name):
         total_count_a = 0
@@ -611,6 +690,9 @@ class Generate_Report:
         self.table = []
         self.risk = 0
 
+    '''
+        將每個子網頁掃描結果輸入報表
+    '''
     def generate_table(self, url, err, name, addr, id_num, phone):
         if err == "":
             self.url = url
@@ -639,12 +721,18 @@ class Generate_Report:
         row_tuple = tuple(self.table_row)
         self.table.append(row_tuple)
 
+    '''
+        檢查是否符合輸入條件
+    '''
     def condition_check(self, condition_1, condition_2):
         if self.table_row[condition_1] >= condition_2:
             self.risk = self.risk + 1
         self.table_row.clear()
         return self.risk
 
+    '''
+        將掃描結果生成 csv 檔
+    '''
     def wirte_file(self, path):
         file_name = path + "掃描結果.csv"
         tmp4 = pd.DataFrame(self.table,
@@ -657,6 +745,9 @@ class Interface:
     def __init__(self):
         pass
 
+    '''
+        輸入介面
+    '''
     def input_box(self):
         print("請輸入學校網址(例如 https://www.ee.ncku.edu.tw/)：")
         input_addr = input()
@@ -677,6 +768,9 @@ class Interface:
         condition_3 = input()
         return input_addr, condition_1, condition_2, condition_3,
 
+    '''
+        輸出頁面
+    '''
     def output(self, suc, risk):
         print("成功連接 " + str(suc) + " 個網頁")
         print("其中有 " + str(risk) + " 個網頁可能有個資外洩疑慮")
@@ -688,41 +782,38 @@ def main():
     t = 0
     tt = 0
     io = Interface()
+    # 輸入條件
     input_addr, condition_1, condition_2, condition_3 = io.input_box()
-    # 輸入三個input
+    # 輸入條件檢查
     step_1 = Input_Check(input_addr, condition_1, condition_2, condition_3)
     step_1.addr_check()
     condition_1 = step_1.condition_1_check()
     condition_2 = step_1.condition_2_check()
     condition_3 = step_1.condition_3_check()
     condition_arr = step_1.condition_4_check()
-    # 進行三個輸入的檢查
+    # 取的輸入網頁中的所有子網頁超鏈結
     step_2 = Obtain_Page(input_addr, condition_3, condition_arr)
     step_2.front_page_url()
     path = step_2.mkdir_file()
     all_url = step_2.get_url()
-    # 取的網頁內容並取回其中的超鏈結
+    # 掃描所有子網頁
     step_3 = Analysis()
     step_4 = Generate_Report()
     for i in tqdm(range(len(all_url))):
+        # 檢查該子網頁是否有回應
         url, err, suc = step_3.document(i, all_url[i], path)
+        # 解析超鏈結內容並檢查是否有匹配字串
         name, addr, id_num, phone, t1, t2 = step_3.reg_find()
+        # 原數量人名數量
         t += t1
+        # 過黑名單後數量
         tt += t2
-        # name, total_count_a, total_count_b = step_3.name_check(name)
-        # ???
         step_4.generate_table(url, err, name, addr, id_num, phone)
         risk = step_4.condition_check(condition_1, condition_2)
-
-    print(t)
-    print(tt)
-    # 解析超鏈結內容並檢查是否有匹配字串
-
-    step_4.wirte_file(path)
     # 生成報表
+    step_4.wirte_file(path)
+    # 輸出結果
     io.output(suc, risk)
-    # 印出結果
-
 
 # ------------------------------------------------------------------
 
