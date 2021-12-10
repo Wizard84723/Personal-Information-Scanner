@@ -5,7 +5,7 @@
 * This tool is mainly used in the Primary Education Unit in Taiwan, but it can also works well on general web pages.
 ## Install
 * Request
-  * Python3
+  * Python 3.9
   * requirements.txt
 * pip
   ```python=
