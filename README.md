@@ -5,8 +5,9 @@
 * This tool is mainly used in the Primary Education Unit in Taiwan, but it can also works well on general web pages.
 ## Install
 * Request
-  * Python 3.9
+  * Python 3 (Optimal 3.9)
   * requirements.txt
+
 * pip
   ```python=
   pip install -r requirements_pip.txt
