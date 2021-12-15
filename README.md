@@ -1,8 +1,8 @@
 # Personal-Information-Scanner
 ## Introduction
 * This is an automatic web personal information scanner.
-* By entering the URL, the program can scan for personal information (e.g. Name, ID number, Phone number...) under the domain and save the scanned results to your computer.
 * This tool is mainly used in the Primary Education Unit in Taiwan, but it can also works well on general web pages.
+* By entering the URL, the program can scan all subpage in this url domain,find out the personal information (e.g. Name, ID number, Phone number...) which is hidden in webpage. Finally save all scan results and summarized them as a csv file.
 
 ## Download
 * Download with zip.
