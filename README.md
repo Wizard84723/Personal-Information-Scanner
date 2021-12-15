@@ -29,6 +29,9 @@
 * Input
   * Scan target URL
   * Scan condition
+   * Selection criteria
+   * Number of occurrences
+   * Define the scan range
 * Output
   * All target subpage files
   * result.csv
