@@ -1,3 +1,4 @@
+#-*-coding:UTF-8 -*-
 from bs4 import BeautifulSoup
 from urllib import parse
 from win32com import client as wc
@@ -14,8 +15,10 @@ import time
 import traceback
 import logging
 import xlrd
+import warnings
 from tqdm import tqdm
-
+# numpy.set_printoptions(threshold=numpy.inf)
+warnings.simplefilter(action='ignore', category=FutureWarning)
 requests.packages.urllib3.disable_warnings()
 FORMAT = '%(asctime)s %(levelname)s: %(message)s'
 logging.basicConfig(level=logging.ERROR, filename='Databreach.log', filemode='a', format=FORMAT)
@@ -189,7 +192,7 @@ class Obtain_Page:
         tmp_arr = []
         for tag in a_tags:
             tag = tag.get('href')
-            # print(tag)
+            # 根據不同形式的tag進行處理
             if tag =="":
                 continue
             elif '#' in tag:
@@ -229,6 +232,9 @@ class Obtain_Page:
         time.sleep(3)
         return all_url
 
+    '''
+        建立資料夾
+    '''
     def mkdir_file(self):
         try:
             path = './' + self.file_name + '/'
@@ -339,7 +345,7 @@ class Check_Formula:
         return id2
 
     '''
-         電話號碼格式檢查
+         電話號碼格式檢查(目前已無使用)
     '''
     def phone_check(self, phone):
         try:
@@ -389,7 +395,7 @@ class Check_Formula:
         return name_2, len(name), len(name_2)
 
     '''
-         檢查 白名單 (自訂義)
+         檢查 白名單 (根據 allow.txt)
     '''
     def name_check_w(self, name):
         try:
@@ -398,7 +404,7 @@ class Check_Formula:
             for line in f.readlines():
                 name_allow.append(line[:-1])
             f.close
-            name_1 = [x for x in name if x not in name_allow]
+            name_1 = [x for x in name if x in name_allow]
         except Exception as e:
             err = Error_Message(e)
             err.errmsg_a()
@@ -419,18 +425,25 @@ class Analysis:
         self.output_array = []
         self.suc = 0
         self.flag = 0
-        # self.r_name_check = re.compile("姓名")
         self.r_name = re.compile(
             r"([陳林黃張李王吳劉蔡楊許鄭謝洪郭邱曾廖賴徐周葉蘇莊呂江何蕭羅高潘簡朱鍾游彭詹胡施沈余盧梁趙顏柯翁魏孫戴范方宋鄧杜傅侯曹薛丁卓阮馬董温唐藍石蔣古紀姚連馮歐程湯黄田康姜白汪鄒尤巫鐘黎涂龔嚴韓袁金童陸夏柳凃邵錢伍倪溫于譚駱熊任甘秦顧毛章史官萬俞雷粘]{1})"
             r"([\u4E00-\u9FFF]{2})")
+        self.r_name_s = re.compile(
+            r"([丁三上下世丘中丹乃么乾于亓五井亞亢仁仇今仝令以仰仲任伊伍伏伯佃但位佐何佘余佟來侍依侯保俞信修俸倉候倪倫假偕停傅傳僧儀儲元兆光党全公兵冀冉冒冬冷冼凌凍出刁刑初別利剛劉力勇勞勤勵勾包匡區卓南卜卞卡卯印危卲卿原厲友叢古可台史司吉同后吏向吳吼吾呂周味呼和咸咼哀哈哖員唐商問啜喬單喻嗄嘪嘺嚴回因國圍坪城堯堵塗墜增墨壬壯壽夏大奉奕奚姒姚姜姬姿婁子孑孔字孟季孫學宇安宋完宓宗官宛宜宣宦宮宰容宿密寇富寧寶寸封將尉尋小尚尤尹尼尾局居屈展屠山岑岡岩岳岸崇崔嵇嶺巖川巢左巧巨巫巴巷布帖帥師席常干平年幸幹庄底府庫康庹庾廉廖廣延弋弓張強彭彼律後徐從復念忻怯惠惲慈慎慕慶應懷戈戎成戚戢戰戴房所扈手才托扶承把拓招拜拾拿振掌提揚換揭撒操支效敏敖敦敬文斯方於施旋日旦旺昌明易昝晁時晉晏普景智暢暨暴曠曲書曹曾月有望朝木末本朱朴机杉李杜杞束杭東杲杻松枉枋林果柏柑柘查柯柳柴栗根格桂桃桑梁梅森楊楓楚業榮槐樂樊樓標樵樸橋機檀櫻欉權欒次歐正步武歸殳段殷毋比毖毛水永汝江池汨汪沃沈沉沐沓沙河況法波泰洋洗洛洪浦浮海涂淡淦淩淳清渠游湖湛湯溥溫滑滕滿漆漢漳潘潛潮澎澹濮濱瀧火烏焉焦熊燕爐片牙牛牟牧犁狄猶玉王班珮理瑪璩瓜瓦甄甕甘生甫甯田由申留畢番疏登白皇皮盂盛盤盧相眉眭睢督瞿矢矯石砂磊磨示祁祖祝祿福禚禤禹秋种秘秦稅程稻穆積竇章童端竹竺符笪管節篠簡籃籍米粘粟糜糠糴紀紅納索紫絲經綦緒線緱練縱繆繩繳續罕羅羊羋群義翁習翟翦翼耀老考耿聞聶職肇肖肯胖胡胥脩脫腰臧臺舒艾芮花芶苑苗苟苡苫英范茅茆茇茍茹荀荊荐荷莊莎莫華萇萬萱葉葛董蒙蒯蒲蒼蒿蓋蓮蔚蔡蔣蕭薄薛薩藍藩藺蘆蘇蘭虎虞虢蟻行衛衡衣衷袁袞裘裴褚襲西要覃覺角解言計記許訾詩詹談諏諶諸謝譙譚谷豆豈豐貝貢買費賀賁資賈賓賢賴賽赫超越趙路蹇車軒輝辛辜農迮送逄速連逯逸遇遊過達遠遲邊邢那邦邰邱邴邵邸邾郁郇郎郗郜郝郟郤部郭都鄂鄒鄔鄞鄢鄧鄭鄺酆酈釋金鈕鈴銀銅錡錢鍾鎖鐘鐵鑑鑾長門閆閉開閔閩閭閰閻闇闊闕關闞阮阿陀院陣陰陳陵陶陸陽隆隋階隗隨隴雍雒雙雲雷霄霍霜霞青靖革靳鞏鞠韋韓項須頊顏顓類顧風飯館饒馬馮駱高魏魚魯鮑鮮鳥鳩鳳鴻鹿麗麥麻黃黎黑黨齊龍龐龑龔]{1})"
+            r"([\u4E00-\u9FFF]{2})")
         '''
+        self.r_name = re.compile(
+            r"([陳林黃張李王吳劉蔡楊許鄭謝洪郭邱曾廖賴徐周葉蘇莊呂江何蕭羅高潘簡朱鍾游彭詹胡施沈余盧梁趙顏柯翁魏孫戴范方宋鄧杜傅侯曹薛丁卓阮馬董温唐藍石蔣古紀姚連馮歐程湯黄田康姜白汪鄒尤巫鐘黎涂龔嚴韓袁金童陸夏柳凃邵錢伍倪溫于譚駱熊任甘秦顧毛章史官萬俞雷粘]{1})"
+            r"([\u4E00-\u9FFF]{2})")
         self.r_name = re.compile(
             r"(\s|:|：?)([陳林黃張李王吳劉蔡楊許鄭謝洪郭邱曾廖賴徐周葉蘇莊呂江何蕭羅高潘簡朱鍾游彭詹胡施沈余盧梁趙顏柯翁魏孫戴范方宋鄧杜傅侯曹薛丁卓阮馬董温唐藍石蔣古紀姚連馮歐程湯黄田康姜白汪鄒尤巫鐘黎涂龔嚴韓袁金童陸夏柳凃邵錢伍倪溫于譚駱熊任甘秦顧毛章史官萬俞雷粘]{1})"
             r"([\u4E00-\u9FFF]{2})(\s{1}?)")
+            # 丁三上下世丘中丹乃么乾于亓五井亞亢仁仇今仝令以仰仲任伊伍伏伯佃但位佐何佘余佟來侍依侯保俞信修俸倉候倪倫假偕停傅傳僧儀儲元兆光党全公兵冀冉冒冬冷冼凌凍出刁刑初別利剛劉力勇勞勤勵勾包匡區卓南卜卞卡卯印危卲卿原厲友叢古可台史司吉同后吏向吳吼吾呂周味呼和咸咼哀哈哖員唐商問啜喬單喻嗄嘪嘺嚴回因國圍坪城堯堵塗墜增墨壬壯壽夏大奉奕奚姒姚姜姬姿婁子孑孔字孟季孫學宇安宋完宓宗官宛宜宣宦宮宰容宿密寇富寧寶寸封將尉尋小尚尤尹尼尾局居屈展屠山岑岡岩岳岸崇崔嵇嶺巖川巢左巧巨巫巴巷布帖帥師席常干平年幸幹庄底府庫康庹庾廉廖廣延弋弓張強彭彼律後徐從復念忻怯惠惲慈慎慕慶應懷戈戎成戚戢戰戴房所扈手才托扶承把拓招拜拾拿振掌提揚換揭撒操支效敏敖敦敬文斯方於施旋日旦旺昌明易昝晁時晉晏普景智暢暨暴曠曲書曹曾月有望朝木末本朱朴机杉李杜杞束杭東杲杻松枉枋林果柏柑柘查柯柳柴栗根格桂桃桑梁梅森楊楓楚業榮槐樂樊樓標樵樸橋機檀櫻欉權欒次歐正步武歸殳段殷毋比毖毛水永汝江池汨汪沃沈沉沐沓沙河況法波泰洋洗洛洪浦浮海涂淡淦淩淳清渠游湖湛湯溥溫滑滕滿漆漢漳潘潛潮澎澹濮濱瀧火烏焉焦熊燕爐片牙牛牟牧犁狄猶玉王班珮理瑪璩瓜瓦甄甕甘生甫甯田由申留畢番疏登白皇皮盂盛盤盧相眉眭睢督瞿矢矯石砂磊磨示祁祖祝祿福禚禤禹秋种秘秦稅程稻穆積竇章童端竹竺符笪管節篠簡籃籍米粘粟糜糠糴紀紅納索紫絲經綦緒線緱練縱繆繩繳續罕羅羊羋群義翁習翟翦翼耀老考耿聞聶職肇肖肯胖胡胥脩脫腰臧臺舒艾芮花芶苑苗苟苡苫英范茅茆茇茍茹荀荊荐荷莊莎莫華萇萬萱葉葛董蒙蒯蒲蒼蒿蓋蓮蔚蔡蔣蕭薄薛薩藍藩藺蘆蘇蘭虎虞虢蟻行衛衡衣衷袁袞裘裴褚襲西要覃覺角解言計記許訾詩詹談諏諶諸謝譙譚谷豆豈豐貝貢買費賀賁資賈賓賢賴賽赫超越趙路蹇車軒輝辛辜農迮送逄速連逯逸遇遊過達遠遲邊邢那邦邰邱邴邵邸邾郁郇郎郗郜郝郟郤部郭都鄂鄒鄔鄞鄢鄧鄭鄺酆酈釋金鈕鈴銀銅錡錢鍾鎖鐘鐵鑑鑾長門閆閉開閔閩閭閰閻闇闊闕關闞阮阿陀院陣陰陳陵陶陸陽隆隋階隗隨隴雍雒雙雲雷霄霍霜霞青靖革靳鞏鞠韋韓項須頊顏顓類顧風飯館饒馬馮駱高魏魚魯鮑鮮鳥鳩鳳鴻鹿麗麥麻黃黎黑黨齊龍龐龑龔
         '''
         # \u2E80-\u9FFF
         self.r_id_num = re.compile(r"[a-z]\d{9}|[A-Z]\d{9}")
         # self.r3 = re.compile(r"(0{1})(\d{1,3})(-{1})(\d{5,8})")
+        # (02)29214630
         self.r_phone_len_1 = re.compile(r"(\d+)(-)(\d+)(-?)(\d*)")
         self.r_phone_len_2 = re.compile(r"([(])(\d+)([)])(\s?)(\d+)(-?)(\d*)")
         self.r_phone_1_1 = re.compile(r"(886|0)(-?)([3-8])(-)(\d{3})(-?)(\d{4})")
@@ -466,6 +479,9 @@ class Analysis:
         except:
             self.err = "V"
             return url, self.err, self.suc
+        '''
+            根據取回不同種類型的子網頁進行處理
+        '''
         try:
             if '.pdf' in url:
                 # 下載檔案
@@ -484,7 +500,6 @@ class Analysis:
                 with open(writefile, 'wb') as f:
                     f.write(self.test.content)
                 f.close()
-                # 解析
                 doc = docx.Document(writefile)  # io.BytesIO(test.content)
                 for para in doc.paragraphs:
                     self.fullText = self.fullText + para.text
@@ -495,12 +510,10 @@ class Analysis:
                                 self.fullText = self.fullText + para.text
                 self.flag = 1
             elif '.doc' in url and self.flag == 0:
-                # 下載檔案
                 writefile = path + str(i) + ".doc"
                 with open(writefile, 'wb') as f:
                     f.write(self.test.content)
                 f.close()
-                # 轉檔
                 location = os.getcwd()
                 word = wc.Dispatch('Word.Application')
                 file_location = str(location) + path + str(i) + ".doc"
@@ -510,7 +523,6 @@ class Analysis:
                 doc.Close()
                 word.Quit()
                 os.remove(file_location)
-                # 解析
                 doc = docx.Document(readfile)  # io.BytesIO(test.content)
                 for para in doc.paragraphs:
                     self.fullText = self.fullText + para.text
@@ -520,26 +532,22 @@ class Analysis:
                             for para in cell.paragraphs:
                                 self.fullText = self.fullText + para.text
             elif '.xls' in url:
-                # 下載檔案
                 writefile = path + str(i) + ".xls"
                 with open(writefile, 'wb') as f:
                     f.write(self.test.content)
                 f.close()
-                data = xlrd.open_workbook(writefile,logfile="Databreach.log")
+                data = xlrd.open_workbook(writefile,logfile=open(os.devnull, 'w'))
                 for sheet in data.sheets():
                     for i in range(sheet.nrows):
                         for j in range(sheet.ncols):
                             text = sheet.cell_value(i, j)
                             stext = str(text)
                             self.fullText = self.fullText + stext
-
             else:
-                # 下載檔案
                 writefile = self.path + str(i) + ".html"
                 with open(writefile, 'wb') as f:
                     f.write(self.test.content)
                 f.close()
-                # 解析
                 self.test.encoding = 'UTF8'
                 soup_leaf = BeautifulSoup(self.test.text, 'lxml')
                 self.fullText = soup_leaf.text
@@ -557,12 +565,14 @@ class Analysis:
     '''
     def reg_find(self):
         name_tmp = ""
+        name_tmp = ""
         name_out = []
-        # name_check = re.findall(self.r_name_check, self.fullText)
+        name_out2 = []
+        name_3 = []
         name = re.findall(self.r_name, self.fullText)
-        # print(name_check)
-        # print(len(name_check))
-        # if len(name_check) > 0:
+        name_s = re.findall(self.r_name_s, self.fullText)
+        check = Check_Formula()
+        # 人名
         for k in range(len(name)):
             '''
             name[k] = name[k][1:-1]
@@ -577,8 +587,19 @@ class Analysis:
                 name_tmp = str(name[k][0]) + str(name[k][1])
                 name_out.append(name_tmp)
             name_tmp = ""
-        id_num = re.findall(self.r_id_num, self.fullText)
-        addr = re.findall(self.r_addr, self.fullText)
+        for m in range(len(name_s)):
+            name_tmp2 = str(name_s[m][0]) + str(name_s[m][1])
+            name_out2.append(name_tmp2)
+            name_tmp2 = ""
+        name_o = numpy.unique(name_out)
+        name_o2 = numpy.unique(name_out2)
+        name_1 = check.name_check_w(name_o2)
+        name_2, t1, t2 = check.name_check_b(name_o)
+        # name_2.extend(name_1)
+        name_1 = numpy.unique(name_1)
+        name_2 = numpy.unique(name_2)
+        name_3 = [x for x in name_2 if x not in name_1]
+        # 電話
         phone_len_tmp = ""
         phone_len_tmp2 = ""
         phone_len_tmp3 = ""
@@ -615,7 +636,6 @@ class Analysis:
                     phone_len_tmp2 = phone_len_tmp2 + str(phone_f1[k][m])
                 phone_out.append(phone_len_tmp2)
                 phone_len_tmp2 = ""
-
         phone_len2 = re.findall(self.r_phone_len_2, self.fullText)
         for i in range(len(phone_len2)):
             for j in range(len(phone_len2[i])):
@@ -643,7 +663,9 @@ class Analysis:
                     phone_len_tmp4 = phone_len_tmp4 + str(phone_f9[k][m])
                 phone_out.append(phone_len_tmp4)
                 phone_len_tmp4 = ""
-
+        phone_out = numpy.unique(phone_out)
+        # 地址
+        addr = re.findall(self.r_addr, self.fullText)
         addr_2 = []
         addr_tmp = ""
         for i in range(len(addr)):
@@ -651,16 +673,12 @@ class Analysis:
                 addr_tmp = addr_tmp + str(addr[i][j])
             addr_2.append(addr_tmp)
             addr_tmp = ""
-        check = Check_Formula()
-        name = numpy.unique(name_out)
-        # name_1 = check.name_check_w(name)
-        name_2, t1, t2 = check.name_check_b(name)
-        # name_2.extend(name_1)
+        addr_2 = numpy.unique(addr_2)
+        # 身份證字號
+        id_num = re.findall(self.r_id_num, self.fullText)
         id_2 = check.id_num_check(id_num)
         id_2 = numpy.unique(id_2)
-        phone_out = numpy.unique(phone_out)
-        addr_2 = numpy.unique(addr_2)
-        return name_2, addr_2, id_2, phone_out, t1, t2
+        return name_1, name_3, addr_2, id_2, phone_out, t1, t2
     """
     def name_check(self,name):
         total_count_a = 0
@@ -693,11 +711,12 @@ class Generate_Report:
     '''
         將每個子網頁掃描結果輸入報表
     '''
-    def generate_table(self, url, err, name, addr, id_num, phone):
+    def generate_table(self, url, err, name_s, name, addr, id_num, phone):
         if err == "":
             self.url = url
             self.err = err
             self.name = name
+            self.name_s = name_s
             self.addr = addr
             self.id_num = id_num
             self.phone = phone
@@ -710,10 +729,11 @@ class Generate_Report:
             self.phone = ""
         self.table_row.append(self.url)
         self.table_row.append(self.err)
-        self.table_row.append(len(self.name))
+        self.table_row.append(len(self.name_s))
         self.table_row.append(len(self.id_num))
         self.table_row.append(len(self.phone))
         self.table_row.append(len(self.addr))
+        self.table_row.append(self.name_s)
         self.table_row.append(self.name)
         self.table_row.append(self.id_num)
         self.table_row.append(self.phone)
@@ -734,9 +754,9 @@ class Generate_Report:
         將掃描結果生成 csv 檔
     '''
     def wirte_file(self, path):
-        file_name = path + "掃描結果.csv"
+        file_name = path + "result.csv"
         tmp4 = pd.DataFrame(self.table,
-                            columns=["網址", "連線失敗", "人名個數", "身分證字號個數", "電話號碼個數", "地址個數", "詳細人名", "詳細身分證字號", "詳細電話號碼",
+                            columns=["網址", "連線失敗", "人名個數", "身分證字號個數", "電話號碼個數", "地址個數", "詳細人名", "其餘可能人名", "詳細身分證字號", "詳細電話號碼",
                                      "詳細地址"])
         tmp4.to_csv(file_name, encoding="utf_8-sig")
 
@@ -803,12 +823,12 @@ def main():
         # 檢查該子網頁是否有回應
         url, err, suc = step_3.document(i, all_url[i], path)
         # 解析超鏈結內容並檢查是否有匹配字串
-        name, addr, id_num, phone, t1, t2 = step_3.reg_find()
+        name_s, name, addr, id_num, phone, t1, t2 = step_3.reg_find()
         # 原數量人名數量
         t += t1
         # 過黑名單後數量
         tt += t2
-        step_4.generate_table(url, err, name, addr, id_num, phone)
+        step_4.generate_table(url, err, name_s, name, addr, id_num, phone)
         risk = step_4.condition_check(condition_1, condition_2)
     # 生成報表
     step_4.wirte_file(path)
