@@ -26,5 +26,6 @@
   * result.csv
 
 ## System Model
-![0000](https://user-images.githubusercontent.com/71222731/145263130-48aa8815-af92-4202-a210-780f205164ce.png)
+
+![0000](https://user-images.githubusercontent.com/71222731/146162843-3512da57-94a8-41c1-98a7-4fd6022fe528.png)
 
