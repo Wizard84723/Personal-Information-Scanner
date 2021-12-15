@@ -42,7 +42,7 @@
 * Phone format
    * https://zh.wikipedia.org/wiki/%E4%B8%AD%E8%8F%AF%E6%B0%91%E5%9C%8B%E9%9B%BB%E8%A9%B1%E8%99%9F%E7%A2%BC 
 * Address format
-   * https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=208![image](https://user-images.githubusercontent.com/71222731/146225443-8d1573bd-c2f9-4fe4-8c10-58d5a1194ad9.png)
+   * https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=208
 * White list
    * http://technology.chtsai.org/namelist/
 * Black list
