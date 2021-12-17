@@ -10,20 +10,21 @@
    ```python=
   sudo git clone https://github.com/Wizard84723/Personal-Information-Scanner.git
   ```
-  
-## Install
-* Request
-  * Python 3 ( Optimal 3.9 )
-  * requirements.txt
 
+## Install
 * pip
   ```python=
   pip install -r requirements_pip.txt
   ```
+  ![q1](https://user-images.githubusercontent.com/71222731/146593733-fc8be585-5cbc-4653-b24f-398d5bb6b17d.png)
+  ![q2](https://user-images.githubusercontent.com/71222731/146593752-9d277695-7daa-4c0f-9893-680eab44ea32.png)
+
 * conda
   ```python=
-  conda install -c conda-forge --file requirements_conda.txt
+  conda env create --file requirements_conda.yml
   ```
+  ![w1](https://user-images.githubusercontent.com/71222731/146593782-f63f7dd9-6a70-41d1-9fc4-83ec7a8462a6.png)
+  ![w2](https://user-images.githubusercontent.com/71222731/146593809-a4d52828-7651-43ef-af9e-46a1fa2236d6.png)
 
 ## I/O
 * Input
