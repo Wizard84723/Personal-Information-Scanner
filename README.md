@@ -18,9 +18,9 @@
   ```
   * Terminal screen
       * Start
-      * ![q1](https://user-images.githubusercontent.com/71222731/146593733-fc8be585-5cbc-4653-b24f-398d5bb6b17d.png)
+         ![q1](https://user-images.githubusercontent.com/71222731/146593733-fc8be585-5cbc-4653-b24f-398d5bb6b17d.png)
       * Terminate
-      * ![q2](https://user-images.githubusercontent.com/71222731/146593752-9d277695-7daa-4c0f-9893-680eab44ea32.png)
+         ![q2](https://user-images.githubusercontent.com/71222731/146593752-9d277695-7daa-4c0f-9893-680eab44ea32.png)
 
 * conda
   ```python=
