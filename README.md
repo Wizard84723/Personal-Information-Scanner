@@ -26,8 +26,11 @@
   ```python=
   conda env create --file requirements_conda.yml
   ```
-  ![w1](https://user-images.githubusercontent.com/71222731/146593782-f63f7dd9-6a70-41d1-9fc4-83ec7a8462a6.png)
-  ![w2](https://user-images.githubusercontent.com/71222731/146593809-a4d52828-7651-43ef-af9e-46a1fa2236d6.png)
+   * Terminal screen
+      * Start
+          ![w1](https://user-images.githubusercontent.com/71222731/146593782-f63f7dd9-6a70-41d1-9fc4-83ec7a8462a6.png)
+      * Terminate    
+          ![w2](https://user-images.githubusercontent.com/71222731/146593809-a4d52828-7651-43ef-af9e-46a1fa2236d6.png)
 
 ## I/O
 * Input
