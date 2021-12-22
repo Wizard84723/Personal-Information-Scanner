@@ -49,7 +49,7 @@
 ## System Model
 > The stage has exception handling is marked with a star symbol.
 
-![0000](https://user-images.githubusercontent.com/71222731/146163051-67f00d75-1c96-4977-9317-19503281d26d.png)
+![0000](https://user-images.githubusercontent.com/71222731/147063999-d80d872e-4275-478e-9ce8-1f22c2371124.png)
 
 ## Reference
 * Phone format
